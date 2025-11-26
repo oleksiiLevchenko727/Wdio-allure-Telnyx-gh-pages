@@ -10,9 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pages: write    
-      id-token: write  
+      contents: read     
+      pages: write       
+      id-token: write    
 
     steps:
       - name: Checkout repository
@@ -24,7 +24,7 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Setup Java
+      - name: Setup Java (for Allure)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -37,34 +37,34 @@ jobs:
         run: npm install -g allure-commandline --unsafe-perm=true
 
       - name: Run WebdriverIO tests
-   
         run: npm run test
 
-      - name: Load test history
-        uses: actions/checkout@v4
-        if: always() 
-        continue-on-error: true 
+      - name: Load Allure History
+        uses: actions/download-artifact@v4
+        if: always()
+        continue-on-error: true
         with:
-          ref: gh-pages
-          path: gh-pages
+          name: github-pages 
 
       - name: Build Allure report
         if: always()
         run: |
+          # Создаем папку для сохранения истории (если скачали артефакт)
           mkdir -p allure-results/history
-          
-          if [ -d "gh-pages/history" ]; then
-            cp -r gh-pages/history/* allure-results/history/
+          if [ -d "github-pages/history" ]; then
+            cp -r github-pages/history/* allure-results/history/
           fi
           
+          # Генерируем новый отчет
           allure generate allure-results --clean -o allure-report
 
-      - name: Deploy Allure report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload Allure Artifact
+        uses: actions/upload-pages-artifact@v3
         if: always()
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
-          publish_branch: gh-pages
-          keep_files: true
-          force_orphan: false
+          path: './allure-report'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        if: always()
