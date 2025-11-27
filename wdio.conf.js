@@ -51,9 +51,16 @@ export const config = {
     //
     capabilities: [{
         // capabilities for local browser web tests
+        maxInstances: 1,
         browserName: 'chrome',
          'goog:chromeOptions': {
-            args: ['--start-maximized']
+             
+            args: ['--no-sandbox',
+                '--disable-infobars',
+                '--headless',
+                '--disable-gpu',
+                '--start-maximized'
+                ]
     }
          // or "firefox", "microsoftedge", "safari"
 
