@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   wdio-tests:
-    image: ghcr.io/oleksiiLevchenko727/wdio-allure:latest 
+    image: ghcr.io/b1e6y/oleksiilevchenko-wdio-tests:latest
     build:
       context: .
       dockerfile: Dockerfile
