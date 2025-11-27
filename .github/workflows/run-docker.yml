@@ -1,32 +1,33 @@
 name: Run Docker Image
 
 on:
-  workflow_run:
-    workflows: ["Publish Docker image"]
-    types:
-      - completed
+  push:
+    branches: [main]
+  pull_request:
 
 jobs:
-  run-container:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  test:
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
-      packages: read
+      packages: write
 
     steps:
-      - name: Log in to GHCR
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull Docker image
-        run: |
-          docker pull ghcr.io/${{ github.repository_owner }}/myapp:latest
+      - name: Build Docker image
+        run: docker build -t ghcr.io/oleksiiLevchenko727/wdio-allure:latest .
 
-      - name: Run Docker container
-        run: |
-          docker run ghcr.io/${{ github.repository_owner }}/myapp:latest
+      - name: Push image to GHCR
+        run: docker push ghcr.io/oleksiiLevchenko727/wdio-allure:latest
+
+      - name: Run WDIO tests inside container
+        run: docker run ghcr.io/oleksiiLevchenko727/wdio-allure:latest
