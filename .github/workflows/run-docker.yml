@@ -1,17 +1,19 @@
 name: Run Docker Image
 
 on:
-  workflow_dispatch:   
-  push:
-    branches: [ "main" ] 
+  workflow_run:
+    workflows: ["Publish Docker image"]
+    types:
+      - completed
 
 jobs:
   run-container:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
-      packages: read  
+      packages: read
 
     steps:
       - name: Log in to GHCR
