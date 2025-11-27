@@ -4,51 +4,44 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
   webdriverio_test:
     runs-on: ubuntu-latest
 
     steps:
-      - name:  Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-
       - name: Build Custom Docker Image
-        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: false 
-          tags: wdio-runner:latest
-     
+          push: false
           load: true
-
+          tags: wdio-runner:latest
 
       - name: Run Tests Inside Container
-    
         run: |
+          # ensure folder exists on host
           mkdir -p allure-results
-          
+
           docker run --rm \
             -v ${{ github.workspace }}:/app \
             -v ${{ github.workspace }}/allure-results:/app/allure-results \
-            wdio-runner:latest
+            wdio-runner:latest npx wdio wdio.conf.js
 
-      
-      - name: Generate and Publish Allure Report
+      - name: Generate & Publish Allure Report
         uses: simple-elf/allure-report-action@v1.7
-       
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           allure_results_path: allure-results
           allure_report_path: allure-report
-          issue_pr: true 
-          
-      - name: Upload Allure Report Artifact
+          issue_pr: true
+
+      - name: Upload Allure HTML
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: allure-report
-          retention-days: 5
+          retention-days: 10
