@@ -1,33 +1,54 @@
-name: Run Docker Image
+name: WebdriverIO Tests with Allure
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  test:
+  webdriverio_test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
 
     steps:
-      - name: Checkout
+      - name:  Checkout Code
         uses: actions/checkout@v4
 
-      - name: Login to GHCR
-        uses: docker/login-action@v3
+
+      - name: Build Custom Docker Image
+        id: build
+        uses: docker/build-push-action@v5
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          context: .
+          push: false 
+          tags: wdio-runner:latest
+     
+          load: true
 
-      - name: Build Docker image
-        run: docker build -t ghcr.io/b1e6y/oleksiilevchenko-wdio-tests:latest .
 
-      - name: Push image to GHCR
-        run: docker push ghcr.io/b1e6y/oleksiilevchenko-wdio-tests:latest
+      - name: Run Tests Inside Container
+    
+        run: |
+          mkdir -p allure-results
+          
+          docker run --rm \
+            -v ${{ github.workspace }}:/app \
+            -v ${{ github.workspace }}/allure-results:/app/allure-results \
+            wdio-runner:latest
 
-      - name: Run WDIO tests inside container
-        run: docker run ghcr.io/b1e6y/oleksiilevchenko-wdio-tests:latest
+      
+      - name: Generate and Publish Allure Report
+        uses: simple-elf/allure-report-action@v1.7
+       
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          allure_results_path: allure-results
+          allure_report_path: allure-report
+          issue_pr: true 
+          
+      - name: Upload Allure Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+          retention-days: 5
