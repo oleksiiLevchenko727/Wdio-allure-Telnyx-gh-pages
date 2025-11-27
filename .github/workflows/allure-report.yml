@@ -49,13 +49,10 @@ jobs:
       - name: Build Allure report
         if: always()
         run: |
-          # Создаем папку для сохранения истории (если скачали артефакт)
           mkdir -p allure-results/history
           if [ -d "github-pages/history" ]; then
             cp -r github-pages/history/* allure-results/history/
           fi
-          
-          # Генерируем новый отчет
           allure generate allure-results --clean -o allure-report
 
       - name: Upload Allure Artifact
