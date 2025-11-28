@@ -3,14 +3,11 @@ version: '3.9'
 services:
   wdio-tests:
     image: ghcr.io/b1e6y/oleksiilevchenko-wdio-tests:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
     container_name: wdio-tests
     environment:
       - CHROME_BIN=/usr/bin/google-chrome
       - CHROME_PATH=/usr/bin/google-chrome
     volumes:
-      - ./allure-results:/usr/src/app/allure-results
-      - ./allure-report:/usr/src/app/allure-report
+      - ./allure-results:/app/allure-results
+      - ./allure-report:/app/allure-report
     tty: true
