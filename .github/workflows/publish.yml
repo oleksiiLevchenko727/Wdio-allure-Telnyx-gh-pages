@@ -25,7 +25,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
-        run: docker build -t ghcr.io/oleksiiLevchenko727/wdio-allure:latest .
+        run: docker build -t ghcr.io/b1e6y/oleksiilevchenko-wdio-tests:latest .
 
       - name: Push Docker image to GHCR
-        run: docker push ghcr.io/oleksiiLevchenko727/wdio-allure:latest
+        run: docker push ghcr.io/b1e6y/oleksiilevchenko-wdio-tests:latest
